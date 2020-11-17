@@ -1,5 +1,5 @@
 {
-  "name": "3li3bdalla/whatsapp-chat-api",
+  "name": "3li3bdalla/whatsapp",
   "description": "chat api whatsapp",
   "license": "Apache-2.0",
   "authors": [
@@ -12,7 +12,7 @@
   "require": {},
   "autoload": {
     "psr-4": {
-      "3li3bdalla\\Whatsapp": "src/helper"
+      "3li3bdalla\\Whatsapp\\": "src"
     }
   },
   "extra": {
@@ -21,7 +21,7 @@
         "AliAbdalla\\Whatsapp\\ServiceProvider"
       ],
       "aliases": {
-        "Debugbar": "AliAbdalla\\Whatsapp\\Facade"
+        "Whatsapp": "AliAbdalla\\Whatsapp\\Facade"
       }
     }
   }
