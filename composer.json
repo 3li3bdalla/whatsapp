@@ -12,17 +12,14 @@
   "require": {},
   "autoload": {
     "psr-4": {
-      "3li3bdalla\\Whatsapp\\": "src"
+      "3li3bdalla\\Whatsapp\\": "src/"
     }
   },
   "extra": {
     "laravel": {
       "providers": [
-        "AliAbdalla\\Whatsapp\\ServiceProvider\\WhatsappServiceProvider"
-      ],
-      "aliases": {
-        "Whatsapp": "AliAbdalla\\Whatsapp\\Facade\\Whatsapp"
-      }
+        "AliAbdalla\\Whatsapp\\ServiceProvider"
+      ]
     }
   }
 }
