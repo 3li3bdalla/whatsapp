@@ -19,7 +19,10 @@
     "laravel": {
       "providers": [
         "AliAbdalla\\Whatsapp\\ServiceProvider"
-      ]
+      ],
+      "aliases": {
+        "Whatsapp": "AliAbdalla\\Whatsapp\\Whatsapp"
+      }
     }
   }
 }

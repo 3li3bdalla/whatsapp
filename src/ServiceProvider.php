@@ -14,19 +14,14 @@
 		 */
 		public function register()
 		{
-			//
-//			$this->app->bind(
-//				'whatsapp', function() {
-//				return new WhatsappCore();
-//			}
-//			);
+			
 			$this->app->singleton(
-				whatsapp, function() {
+				"whatsapp", function() {
 				return new WhatsappCore();
 			}
 			);
 			
-			$this->app->alias(WhatsappCore::class, 'whatsapp');
+			$this->app->alias(Whatsapp::class, 'Whatsapp');
 			
 			
 		}

@@ -1,6 +1,6 @@
 <?php
 	
-	namespace AliAbdalla\Whatsapp\Facade;
+	namespace AliAbdalla\Whatsapp;
 	
 	use Illuminate\Support\Facades\Facade;
 	
@@ -14,7 +14,7 @@
 
 	 */
 	class Whatsapp extends Facade
-	{
+	{ 
 		/**
 		 * Get the registered name of the component.
 		 *
