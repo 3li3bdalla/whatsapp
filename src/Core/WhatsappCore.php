@@ -3,7 +3,8 @@
 	namespace AliAbdalla\Whatsapp\Core;
 	
 	use Carbon\Carbon;
-	use Illuminate\Filesystem\Cache;
+	use Illuminate\Support\Facades\Cache;
+	use Symfony\Component\HttpClient\Exception\ClientException;
 	use Symfony\Component\HttpClient\HttpClient;
 	use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 	
@@ -20,7 +21,7 @@
 		public function __construct()
 		{
 			$this->token = config('services.whatsapp.token');
-			$this->token = config('services.whatsapp.base_url');
+			$this->baseUrl = config('services.whatsapp.base_url');
 		}
 		
 		
@@ -47,9 +48,9 @@
 		
 		private function run($message, $phone)
 		{
-			$this->handleMaxRequestPerSeconds();
+//			$this->handleMaxRequestPerSeconds();
 			$this->perform($message, $phone);
-			$this->setLastMessageTime();
+//			$this->setLastMessageTime();
 		}
 //
 //		public function sendFile($body, $phoneNumber)
@@ -64,7 +65,7 @@
 		
 		private function handleMaxRequestPerSeconds()
 		{
-			$lastMessageTime = $this->getLastMessageTime();
+			$lastMessageTime = Carbon::parse($this->getLastMessageTime());
 			if($lastMessageTime->diffInSeconds(Carbon::now()) < $this->shouldMadeRequestEvery) {
 				sleep($this->shouldMadeRequestEvery);
 			}
@@ -73,15 +74,26 @@
 		
 		private function getLastMessageTime()
 		{
-			return Carbon::parse(Cache::get('whatsapp_last_message_time', Carbon::now()->subMinute()));
+			return Cache::store('file')->get('whatsapp_last_message_time', Carbon::now()->subMinute()->toDateTimeString());
+//			return Carbon::parse(Cache::get('whatsapp_last_message_time', Carbon::now()->subMinute()->toDateTimeString()));
 		}
 		
 		private function perform($message, $phone)
 		{
 			$client = $this->getClient();
 			try {
-				$this->response = $client->request('GET', $this->getUrl());
+				
+				$this->response = $client->request('GET', $this->baseUrl . "sendMessage",[
+					'query' => [
+						'body' => $message,
+						'phone' => $phone,
+						'token' => $this->token
+					]
+				]);
 			} catch(TransportExceptionInterface $e) {
+				$this->error = $e;
+			}
+			catch(ClientException $e) {
 				$this->error = $e;
 			}
 		}
@@ -91,14 +103,13 @@
 			return HttpClient::create();
 		}
 		
-		private function getUrl()
-		{
-			return $this->baseUrl . "?token=" . $this->token;
-		}
+		
 		
 		private function setLastMessageTime()
 		{
-			return Carbon::parse(Cache::put('whatsapp_last_message_time', Carbon::now(), 1440));
+			$nowTime =  Carbon::now()->toDateTimeString();
+//			dd($nowTime);
+//			 Carbon::parse(Cache::store('file')->put('whatsapp_last_message_time',"n"));
 		}
 		
 		private function sendSingle($message, $phoneNumber)
