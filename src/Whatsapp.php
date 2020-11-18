@@ -3,18 +3,17 @@
 	namespace AliAbdalla\Whatsapp;
 	
 	use Illuminate\Support\Facades\Facade;
+	use Symfony\Component\HttpClient\HttpClient;
+	use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 	
 	/**
-//	 * @method static \Illuminate\Contracts\Cache\Repository  store(string|null $name = null)
 	 * @method static string test()
-//	 * @method static bool missing(string $key)
-//	 * @method static mixed get(string $key, mixed $default = null)
-//	 * @method static mixed pull(string $key, mixed $default = null)
-//	 * @method static bool put(string $key, $value, \DateTimeInterface|\DateInterval|int $ttl)
-
+	 * @method static void sendMessage($message, string|array $phoneNumber)
+	 * @method static TransportExceptionInterface getError()
+	 * @method static HttpClient getResponse()
 	 */
 	class Whatsapp extends Facade
-	{ 
+	{
 		/**
 		 * Get the registered name of the component.
 		 *
