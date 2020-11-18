@@ -5,7 +5,7 @@
 	use AliAbdalla\Whatsapp\Core\WhatsappCore;
 	
 	
-	class ServiceProvider extends Illuminate\Support\ServiceProvider
+	class ServiceProvider extends \Illuminate\Support\ServiceProvider
 	{
 		/**
 		 * Register services.
