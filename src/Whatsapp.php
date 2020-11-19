@@ -9,6 +9,7 @@
 	/**
 	 * @method static string test()
 	 * @method static void sendMessage($message, string|array $phoneNumber)
+	 * @method static void sendFile($path, string|array $phoneNumber,optinal $filename)
 	 * @method static TransportExceptionInterface getError()
 	 * @method static HttpClient getResponse()
 	 */

@@ -4,6 +4,7 @@
 	
 	use Carbon\Carbon;
 	use Illuminate\Support\Facades\Cache;
+	use Illuminate\Support\Facades\Storage;
 	use Symfony\Component\HttpClient\Exception\ClientException;
 	use Symfony\Component\HttpClient\HttpClient;
 	use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
@@ -16,6 +17,9 @@
 		private $shouldMadeRequestEvery = 6;
 		private $response;
 		private $error = null;
+		private $targetLink;
+		private $filename = "";
+		private $requestMethod = "GET";
 		
 		
 		public function __construct()
@@ -25,12 +29,15 @@
 		}
 		
 		
-		public function sendMessage($message, $phoneNumber) // [2332,235235,]
+		public function sendMessage($message, $phoneNumber)
 		{
+			$this->targetLink = "sendMessage";
+		
+			
 			if($this->isList($phoneNumber)) {
-				$this->sendList($message, $phoneNumber);
+				return $this->sendList($message, $phoneNumber);
 			} else {
-				$this->sendSingle($message, $phoneNumber);
+				return $this->sendSingle($message, $phoneNumber);
 			}
 		}
 		
@@ -41,61 +48,55 @@
 		
 		private function sendList($message, $phoneNumber)
 		{
+			
 			foreach($phoneNumber as $phone) {
 				$this->run($message, $phone);
 			}
+			
+			return $this;
 		}
 		
 		private function run($message, $phone)
 		{
-//			$this->handleMaxRequestPerSeconds();
-			$this->perform($message, $phone);
-//			$this->setLastMessageTime();
-		}
-//
-//		public function sendFile($body, $phoneNumber)
-//		{
-//			return "test facades";
-//		}
-//
-//		public function sendLocation($location, $phoneNumber)
-//		{
-//			return "test facades";
-//		}
-		
-		private function handleMaxRequestPerSeconds()
-		{
-			$lastMessageTime = Carbon::parse($this->getLastMessageTime());
-			if($lastMessageTime->diffInSeconds(Carbon::now()) < $this->shouldMadeRequestEvery) {
-				sleep($this->shouldMadeRequestEvery);
-			}
-			
-		}
-		
-		private function getLastMessageTime()
-		{
-			return Cache::store('file')->get('whatsapp_last_message_time', Carbon::now()->subMinute()->toDateTimeString());
-//			return Carbon::parse(Cache::get('whatsapp_last_message_time', Carbon::now()->subMinute()->toDateTimeString()));
+			return $this->perform($message, $phone);
 		}
 		
 		private function perform($message, $phone)
 		{
 			$client = $this->getClient();
-			try {
-				
-				$this->response = $client->request('GET', $this->baseUrl . "sendMessage",[
+		
+			if($this->requestMethod == 'GET')
+			{
+				$data = [
 					'query' => [
 						'body' => $message,
+						'filename' => $this->filename,
 						'phone' => $phone,
 						'token' => $this->token
 					]
-				]);
+				];
+			}else{
+				$data = [
+					'body' => [
+						'body' => $message,
+						'filename' => $this->filename,
+						'phone' => $phone,
+						
+					]
+				];
+			}
+			try {
+				$this->response = $client->request(
+					$this->requestMethod, $this->baseUrl . $this->targetLink . "?token=" .  $this->token, $data
+				);
+
+//				return $this;
 			} catch(TransportExceptionInterface $e) {
 				$this->error = $e;
-			}
-			catch(ClientException $e) {
+			} catch(ClientException $e) {
 				$this->error = $e;
 			}
+			return $this;
 		}
 		
 		private function getClient()
@@ -103,18 +104,22 @@
 			return HttpClient::create();
 		}
 		
-		
-		
-		private function setLastMessageTime()
-		{
-			$nowTime =  Carbon::now()->toDateTimeString();
-//			dd($nowTime);
-//			 Carbon::parse(Cache::store('file')->put('whatsapp_last_message_time',"n"));
-		}
-		
 		private function sendSingle($message, $phoneNumber)
 		{
-			$this->run($message, $phoneNumber);
+			return $this->run($message, $phoneNumber);
+		}
+		
+		public function sendFile($storagePath, $phoneNumber, $filename = '')
+		{
+			$this->targetLink = "sendFile";
+			$this->requestMethod = "POST";
+			$this->filename = $filename;
+			$message = Storage::url($storagePath);
+			if($this->isList($phoneNumber)) {
+				return $this->sendList($message, $phoneNumber);
+			} else {
+				return $this->sendSingle($message, $phoneNumber);
+			}
 		}
 		
 		/**
@@ -131,6 +136,21 @@
 		public function getError()
 		{
 			return $this->error;
+		}
+		
+		private function handleMaxRequestPerSeconds()
+		{
+			$lastMessageTime = Carbon::parse($this->getLastMessageTime());
+			if($lastMessageTime->diffInSeconds(Carbon::now()) < $this->shouldMadeRequestEvery) {
+				sleep($this->shouldMadeRequestEvery);
+			}
+			
+		}
+		
+		private function getLastMessageTime()
+		{
+			return Cache::store('file')->get('whatsapp_last_message_time', Carbon::now()->subMinute()->toDateTimeString());
+//			return Carbon::parse(Cache::get('whatsapp_last_message_time', Carbon::now()->subMinute()->toDateTimeString()));
 		}
 		
 	}
